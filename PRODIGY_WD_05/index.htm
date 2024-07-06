@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="card">
+        <div class="search">
+            <input type="text" id="cityInput" placeholder="Enter city name" spellcheck="false">
+            <button id="searchBtn"><img src="images/search.png" alt="Search"></button>
+        </div>
+        <div class="error">
+            <p>Invalid city name</p>
+        </div>
+        <div class="weather">
+            <img src="images/clear.png" class="weather-icon" alt="Weather Icon">
+            <h1 class="temp">22°C</h1>
+            <h2 class="city">New York</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="images/humidity.png" alt="Humidity">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="images/wind.png" alt="Wind Speed">
+                    <div>
+                        <p class="wind">15 Km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "e86f14684f89e42816dc983d6fced07d"; 
+        const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+        const searchBox = document.getElementById("cityInput");
+        const searchBtn = document.getElementById("searchBtn");
+        const weatherIcon = document.querySelector(".weather-icon");
+        const weatherDisplay = document.querySelector(".weather");
+        const errorDisplay = document.querySelector(".error");
+
+        
+        function showWeather() {
+            weatherDisplay.style.display = "block";
+            errorDisplay.style.display = "none"; 
+        }
+
+        
+        function showError(message) {
+            errorDisplay.style.display = "block";
+            errorDisplay.querySelector("p").textContent = message;
+            weatherDisplay.style.display = "none"; 
+        }
+
+        
+        async function updateWeather(city) {
+            try {
+                const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+                if (response.ok) {
+                    const data = await response.json();
+
+                    
+                    document.querySelector(".city").innerHTML = data.name;
+                    document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°C";
+                    document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+                    document.querySelector(".wind").innerHTML = data.wind.speed + " Km/h";
+
+                    
+                    const weatherMain = data.weather[0].main.toLowerCase();
+                    switch (weatherMain) {
+                        case "clouds":
+                            weatherIcon.src = "images/clouds.png";
+                            break;
+                        case "clear":
+                            weatherIcon.src = "images/clear.png";
+                            break;
+                        case "rain":
+                            weatherIcon.src = "images/rain.png";
+                            break;
+                        case "drizzle":
+                            weatherIcon.src = "images/drizzle.png";
+                            break;
+                        case "mist":
+                            weatherIcon.src = "images/mist.png";
+                            break;
+                        case "snow":
+                            weatherIcon.src = "images/snow.png";
+                            break;
+                        default:
+                            console.warn(`Unmatched weather condition: ${weatherMain}`);
+                            break;
+                    }
+
+                    
+                    showWeather();
+                } else {
+                    
+                    showError(`Error: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showError("Network error. Please try again.");
+            }
+        }
+
+        
+        searchBtn.addEventListener("click", () => {
+            const city = searchBox.value.trim();
+            if (city) {
+                updateWeather(city);
+            } else {
+                showError("Please enter a city name.");
+            }
+        });
+    </script>
+</body>
+</html>
